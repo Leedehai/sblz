@@ -8,10 +8,12 @@
 #endif
 
 #if defined(__linux__)
-#define OS_LINUX
+#define OS_LINUX 1
 #elif defined(__APPLE__)
-#define OS_MACOS
+#define OS_MACOS 1
 #endif
+
+#define EXPORT __attribute__((visibility("default")))
 
 #else
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2020 Leedehai. All rights reserved.
 // Use of this source code is governed under the LICENSE.txt file.
 
-#ifndef SBLZ_INLCUDE_SBLZ_SBLZ_H_
+#ifndef SBLZ_INCLUDE_SBLZ_SBLZ_H_
 #define SBLZ_INCLUDE_SBLZ_SBLZ_H_
 
 #include <cstddef>
