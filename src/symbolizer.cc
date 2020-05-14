@@ -5,7 +5,7 @@
 // Copyright (c) 2008, Google Inc.
 // License of glog: see CREDITS
 
-#include <string.h>  // memchr(), memcmp(), memmove(), memset()
+#include <string.h>  // memchr(), memcmp(), memmove(), memset(), memcpy()
 
 #include <algorithm>  // std::min()
 #include <limits>  // std::numeric_limits<>
@@ -330,11 +330,12 @@ void WriteAddressNumber(void* address,
                         uint64_t base_addr,
                         char* buffer,
                         size_t buffer_size) {
-  buffer[buffer_size - 1] = '\0';  // Make sure it is always '\0'-terminated.
   SafeAppendString("+0x", buffer, buffer_size);
   SafeAppendHexNumber(reinterpret_cast<uint64_t>(address) - base_addr, buffer,
                       buffer_size);
+  buffer[buffer_size - 1] = '\0';  // Make sure it is always '\0'-terminated.
 }
+
 }  // namespace
 
 // Read the section headers in the given ELF binary, and if a section
@@ -659,7 +660,7 @@ EXPORT bool Symbolize(void* address, char* buffer, size_t buffer_size) {
     // opened. This is still considered success and we write the instruction
     // address.
     WriteAddressNumber(address, base_addr, buffer, buffer_size);
-    return false;
+    return true;
   }
 
   FileDescriptor wrapped_object_fd(object_file_fd);
@@ -671,28 +672,34 @@ EXPORT bool Symbolize(void* address, char* buffer, size_t buffer_size) {
   bool got_symbol = GetSymbolFromObjectFile(wrapped_object_fd.get(),
                                             reinterpret_cast<uint64_t>(address),
                                             buffer, buffer_size, base_addr);
+  buffer[buffer_size - 1] = '\0';  // Make sure it is always '\0'-terminated.
+
   if (!got_symbol) {
     // The object file containing PC was opened successfully however the
     // symbol was not found. The object may have been stripped, but this is
     // still considered success and we write the instruction address.
     WriteAddressNumber(address, base_addr, buffer, buffer_size);
-    return true;
   }
 
-  return false;
+  return true;
 }
 
 #elif defined(OS_MACOS)
 
 EXPORT bool Symbolize(void* address, char* buffer, size_t buffer_size) {
   Dl_info info;
-  if (dladdr(address, &info) && strlen(info.dli_sname) < buffer_size) {
-    strcpy(buffer, info.dli_sname);
+  // If an image containing addr cannot be found, dladdr() returns 0. On success
+  // it returns a non-zero value.
+  // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dladdr.3.html
+  if (dladdr(address, &info)) {
+    memcpy(buffer, info.dli_sname, buffer_size);
+    buffer[buffer_size - 1] = '\0';  // Make sure it is always '\0'-terminated.
     return true;
   }
   return false;
 }
 
 #endif
+
 }  // namespace posix
 }  // namespace sblz

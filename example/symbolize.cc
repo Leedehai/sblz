@@ -1,34 +1,35 @@
 // Copyright (c) 2020 Leedehai. All rights reserved.
 // Use of this source code is governed under the LICENSE.txt file.
 
-// macOS (Darwin 19.4.0 on xnu-6153.101.6)
-// [11] 0x0000000107b1215e _ZN10StackTraceC2Ev
-// [10] 0x0000000107b11c65 _ZN10StackTraceC1Ev
-// [09] 0x0000000107b11a75 _Z2f7v
-// [08] 0x0000000107b120d9 _Z2f6v
-// [07] 0x0000000107b120e9 _Z2f5v
-// [06] 0x0000000107b120f9 _Z2f4v
-// [05] 0x0000000107b12109 _Z2f3v
-// [04] 0x0000000107b12119 _Z2f2v
-// [03] 0x0000000107b12129 _Z2f1v
-// [02] 0x0000000107b12139 main
+// macOS (Darwin 19.4.0 on xnu-6153.101.6, Apple Clang 11.0.0, libc++ 800.7.0)
+// [11] 0x0000000106ec114e _ZN10StackTraceC2Ev
+// [10] 0x0000000106ec0ba5 _ZN10StackTraceC1Ev
+// [09] 0x0000000106ec0965 _Z2f7v
+// [08] 0x0000000106ec1019 _Z2f6v
+// [07] 0x0000000106ec1031 _Z2f5PKNSt3__113basic_ostreamIcNS_11char_traitsIcEEEE
+// [06] 0x0000000106ec105b _Z2f4PFvvE
+// [05] 0x0000000106ec1099 _Z2f3iiiiid
+// [04] 0x0000000106ec10d4 _Z2f2f8MyStruct
+// [03] 0x0000000106ec10fb _Z2f1ii
+// [02] 0x0000000106ec1120 main
 // [01] 0x00007fff6fe85cc9 start
-// [00] 0x0000000000000001 start
+// [00] 0x0000000000000001 (blank)
 
-// Ubuntu (Linux 4.15.0-96)
-// [10] 0x0000000000402331 _ZN10StackTraceC2Ev
-// [09] 0x0000000000401e57 _Z2f7v
-// [08] 0x00000000004022a9 _Z2f6v
-// [07] 0x00000000004022b9 _Z2f5v
-// [06] 0x00000000004022c9 _Z2f4v
-// [05] 0x00000000004022d9 _Z2f3v
-// [04] 0x00000000004022e9 _Z2f2v
-// [03] 0x00000000004022f9 _Z2f1v
-// [02] 0x0000000000402309 main
-// [01] 0x00007f0de056db97 __libc_start_main
-// [00] 0x0000000000400d1a _start
+// Ubuntu (Linux 4.15.0-96, Clang 10.0.0, libstdc++ 6.0.25)
+// [10] 0x00000000004024b1 _ZN10StackTraceC2Ev
+// [09] 0x0000000000401ec7 _Z2f7v
+// [08] 0x0000000000402369 _Z2f6v
+// [07] 0x0000000000402381 _Z2f5PKSo
+// [06] 0x00000000004023ab _Z2f4PFvvE
+// [05] 0x00000000004023ec _Z2f3iiiiid
+// [04] 0x0000000000402434 _Z2f2f8MyStruct
+// [03] 0x000000000040245b _Z2f1ii
+// [02] 0x0000000000402480 main
+// [01] 0x00007f8f22f5fb97 __libc_start_main
+// [00] 0x0000000000400d8a _start
 
 #include <execinfo.h>  // backtrace()
+#include <string.h>  // memcpy()
 
 #include <cstddef>
 #include <iomanip>
@@ -63,8 +64,11 @@ NO_INLINE void f7() {
   int trace_count = stack_trace.GetCount();
   void** trace = stack_trace.GetTrace();
   for (int i = 0; i < trace_count; ++i) {
-    char symbol_buffer[32];
-    sblz::posix::Symbolize(trace[i], symbol_buffer, sizeof(symbol_buffer));
+    char symbol_buffer[128] = {0};
+    if (!sblz::posix::Symbolize(trace[i], symbol_buffer,
+                                sizeof(symbol_buffer))) {
+      memcpy(symbol_buffer, "(blank)", sizeof(symbol_buffer));
+    }
     char address_buffer[17] = {0};
     itoa_r(reinterpret_cast<intptr_t>(trace[i]), address_buffer,
            sizeof(address_buffer), /*base=*/16, /*min_width_of_digits=*/16,

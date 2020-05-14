@@ -23,9 +23,10 @@ def validate_output(output):
     Returns:
     bool: True on success
     """
-    line_pattern = re.compile(r"\[(\d\d)\] (0x[0-9A-Fa-f]{16,16}) \w+")
+    line_pattern = re.compile(r"\[(\d\d)\] (0x[0-9A-Fa-f]{16,16}) (.+)")
     trace_lines = [e for e in output.split('\n') if len(e)]
     found_addresses = {}  # key: address (hex string), val: stack index
+    found_symbols = set()
     for i, line in enumerate(trace_lines):
         match_obj = line_pattern.match(line)
         if not match_obj:
@@ -49,10 +50,12 @@ def validate_output(output):
             return False
         found_addresses[address] = actual_index
         # Function name
-        # NOTE the function names are not guaranteed to be unique
-        # because on macOS there may be two "start" before calling
-        # into main().
-    return True
+        # NOTE the function names are not guaranteed to be unique or
+        # even non-empty (e.g. on macOS, the very first call before
+        # our main() is not given a name).
+        function_symbol = match_obj.group(2)
+        found_symbols.add(function_symbol)
+    return len(found_symbols) >= 8  # main, f1, f2, ..., f7
 
 
 def run():
