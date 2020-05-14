@@ -22,16 +22,33 @@ which solved that issue).
 ## Prerequisites
 
 - operating system: Linux or macOS
-- compiler: [Clang](https://clang.llvm.org) compiler with [libc++](https://libcxx.llvm.org/)
-<sup>[note](https://gist.github.com/Leedehai/4ed513a8efa835f09ebb1ed8b71eb43f)</sup>,
-supporting C++17.
+- compiler: [Clang](https://clang.llvm.org) compiler (though GCC is supported
+with best efforts) supporting C++17.
 - [GNU Make](https://www.gnu.org/software/make/)
 
-## How to build
-TODO
+## How to use
+
+APIs: see [include/sblz/sblz.h](include/sblz/sblz.h).
+
+**Symbolizer**
+
+The symbolizer walks the call stack of the program under inspection, so you need
+to link the symbolizer into that program binary. See [Makefile](Makefile) for
+how to build and [this example](example/symbolize.cc) for how to use it in a
+client program.
 
 ## How to test
+
+```sh
+# Build the binaries.
+make clean && make
+
+# Symbolizer
+tests/check_symbolizer.py
+
+# Demangler
 TODO
+```
 
 ## How to use
 
