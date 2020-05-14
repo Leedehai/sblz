@@ -4,6 +4,10 @@
 The symbolizer and demangler are used to interpret stack traces produced by
 POSIX system call `backtrace()` so as to make them human-readable.
 
+[CREDITS](CREDITS): Basically it is a refactoring and simplification of
+[Chromium](https://www.chromium.org)'s extraction of
+[glog](https://github.com/google/glog) so that it can be embedded easily.
+
 > Why not use `backtrace_symbols()` and `abi::__cxa_demangle()`?<br><br>Because
 they use dynamic memory allocation under the hood, and are thus
 [async-signal unsafe](http://man7.org/linux/man-pages/man7/signal-safety.7.html),
