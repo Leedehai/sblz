@@ -20,6 +20,13 @@ PROGRAMS_UNDER_TEST = [
 ]
 
 
+def find_overlapped_symbol(mangled_symbol, function_names):
+    for name in function_names:
+        if name in mangled_symbol:
+            return name
+    return None
+
+
 def validate_output(output):
     """
     Params:
@@ -31,7 +38,9 @@ def validate_output(output):
     line_pattern = re.compile(r"\[(\d\d)\] (0x[0-9A-Fa-f]{16,16}) (.+)")
     trace_lines = [e for e in output.split('\n') if len(e)]
     found_addresses = {}  # key: address (hex string), val: stack index
-    found_symbols = set()
+    remaining_expected_symbols = [
+        "main", "f1", "f2", "f3", "f4", "f5", "f6", "f7"
+    ]
     for i, line in enumerate(trace_lines):
         match_obj = line_pattern.match(line)
         if not match_obj:
@@ -47,7 +56,10 @@ def validate_output(output):
         # Address
         # NOTE addresses may not be decreasing because some functions
         # are system-provided.
-        address = match_obj.group(1)
+        address = match_obj.group(2)
+        if not address.startswith("0x"):
+            testing_utils.print_error("not an address hexadecimal string: %s" %
+                                      address)
         if address in found_addresses:
             testing_utils.print_error(
                 "address string %s at position %d already appeared at a higher stack position %d"
@@ -58,9 +70,18 @@ def validate_output(output):
         # NOTE the function names are not guaranteed to be unique or
         # even non-empty (e.g. on macOS, the very first call before
         # our main() is not given a name).
-        function_symbol = match_obj.group(2)
-        found_symbols.add(function_symbol)
-    return len(found_symbols) >= 8  # main, f1, f2, ..., f7
+        function_symbol = match_obj.group(3)
+        overlapped_symbol = find_overlapped_symbol(function_symbol,
+                                                   remaining_expected_symbols)
+        if overlapped_symbol:
+            remaining_expected_symbols.remove(overlapped_symbol)
+
+    if len(remaining_expected_symbols):
+        testing_utils.print_error(
+            "these symbols are not found in the stack trace: %s" %
+            ", ".join(remaining_expected_symbols))
+        return False
+    return True
 
 
 def run_one(program):
