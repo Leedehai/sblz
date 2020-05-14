@@ -17,6 +17,9 @@ USE_LIB_CXX = #-stdlib=libc++
 CXXFLAGS = -std=c++17 -Wall -pedantic -Iinclude -Isrc -MMD $(USE_LIB_CXX)
 LDFLAGS = $(USE_LIB_CXX)
 
+# -fvisibility-inlines-hidden is for C++ only
+SOLIB_HIDE_SYMBOLS=-fvisibility=hidden -fvisibility-inlines-hidden
+
 # Headers:
 #
 # I probably should use -MMD or whatever flags to get the dependencies for *.h
@@ -35,8 +38,7 @@ LDFLAGS = $(USE_LIB_CXX)
 # Maybe I'll do it later in another commit.
 
 # phony rule
-all: out/example_symbolize
-	@printf "\033[36m$^\033[0m\n"
+all: out/example_symbolize out/example_symbolize_with_so
 
 # phony rule
 clean:
@@ -51,10 +53,30 @@ out_dir:
 out/symbolizer.o : src/symbolizer.cc | out_dir
 	$(CXX) $(CXXFLAGS) $(CXX_OPTIMIZE) -c $^ -o $@
 
+out/symbolizer.pic.o : src/symbolizer.cc | out_dir
+	$(CXX) $(CXXFLAGS) $(CXX_OPTIMIZE) $(SOLIB_HIDE_SYMBOLS) -fPIC -c $^ -o $@
+
+out/symbolizer.so : out/symbolizer.pic.o | out_dir
+	$(CXX) $(SOLIB_HIDE_SYMBOLS) -shared $^ -o $@
+
 out/example_symbolize.o : example/symbolize.cc | out_dir
 	$(CXX) $(CXXFLAGS) $(CXX_NO_OPTIMIZE) -c $^ -o $@
 
-out/example_symbolize : out/symbolizer.o out/example_symbolize.o | out_dir
+out/example_symbolize : out/example_symbolize.o out/symbolizer.o | out_dir
 	$(CXX) $(LDFLAGS) $^ -o $@
+	@printf "\033[36mDone: $@\033[0m\n"
+
+# This links with the dynamic library. At the current configuration this
+# executable must be invoked from the project root, not under the "out"
+# directory or any other directories, because I did not tell the runtime
+# loader how to find the dynamic library in a working-directory-agnostic
+# way.
+# To tell the runtime loader how to do so regardless of the working
+# directory, I need to tweak the compiler/linker command flags, and it's
+# different on Linux and macOS. To see how to do it, see my another repo
+# https://github.com/leedehai/buildconfig file toolchain/BUILD.gn.
+out/example_symbolize_with_so : out/example_symbolize.o out/symbolizer.so | out_dir
+	$(CXX) $(LDFLAGS) -o $@ $^
+	@printf "\033[36mDone: $@\033[0m\n"
 
 .PHONY: all clean

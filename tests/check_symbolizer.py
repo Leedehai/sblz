@@ -11,8 +11,13 @@ import re
 # My own package
 import testing_utils
 
-PROGRAM_UNDER_TEST = os.path.join(
-    os.path.dirname(__file__), "..", "out", "example_symbolize")
+PROGRAMS_UNDER_TEST = [
+    os.path.relpath(os.path.join(os.path.dirname(__file__), "..", "out", e))
+    for e in [
+        "example_symbolize",  # symbolizer as an object
+        "example_symbolize_with_so",  # symbolizer as a shared library
+    ]
+]
 
 
 def validate_output(output):
@@ -58,21 +63,37 @@ def validate_output(output):
     return len(found_symbols) >= 8  # main, f1, f2, ..., f7
 
 
+def run_one(program):
+    """
+    Returns:
+    bool: True on success
+    """
+    if not os.path.isfile(program):
+        testing_utils.print_error("program not built: %s, did you run 'make'?" %
+                                  program)
+        return False
+    try:
+        print("run: %s" % program)
+        output = subprocess.check_output([program])
+    except subprocess.CalledProcessError as e:
+        testing_utils.print_error("subprocess error: %s" % str(e))
+        return False
+    except OSError as e:
+        testing_utils.print_error(str(e))
+        return False
+    return validate_output(testing_utils.ensure_str(output))
+
+
 def run():
     """
     Returns:
     bool: True on success
     """
-    if not os.path.isfile(PROGRAM_UNDER_TEST):
-        testing_utils.print_error("program not built: %s, did you run 'make'?" %
-                                  PROGRAM_UNDER_TEST)
-        return False
-    try:
-        output = subprocess.check_output([PROGRAM_UNDER_TEST])
-    except subprocess.CalledProcessError as e:
-        testing_utils.print_error("subprocess error: %s" % str(e))
-        return False
-    return validate_output(testing_utils.ensure_str(output))
+    all_ok = True
+    for e in PROGRAMS_UNDER_TEST:
+        if False == run_one(e):
+            all_ok = False
+    return all_ok
 
 
 if __name__ == "__main__":

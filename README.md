@@ -33,9 +33,11 @@ APIs: see [include/sblz/sblz.h](include/sblz/sblz.h).
 **Symbolizer**
 
 The symbolizer walks the call stack of the program under inspection, so you need
-to link the symbolizer into that program binary. See [Makefile](Makefile) for
-how to build and [this example](example/symbolize.cc) for how to use it in a
+to link the symbolizer into that program binary<sup>[1]</sup>. See [Makefile](Makefile)
+for how to build and [this example](example/symbolize.cc) for how to use it in a
 client program.
+
+> <sup>[1]</sup> Link as an object, a static library, or a shared library.
 
 ## How to test
 
