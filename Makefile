@@ -36,7 +36,7 @@ LDFLAGS = $(USE_LIB_CXX)
 
 # phony rule
 all: out/example_symbolize
-	@printf "\x1b[36m$^\x1b[0m\n"
+	@printf "\033[36m$^\033[0m\n"
 
 # phony rule
 clean:

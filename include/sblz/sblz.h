@@ -12,8 +12,12 @@ namespace posix {
 
 /// Retrieves the mangled symbol from the running process's memory
 /// that corresponds to the function call represented by the input
-/// memory address returned by system call backtrace(), and writes
-/// the symbol string to the buffer, then returns true on success.
+/// address (instruction address, in the program counter register)
+/// returned by system call backtrace(), and then puts that symbol
+/// string to the buffer, then returns true on success.
+/// As an exception, if the symbol was stripped in the binary, the
+/// instruction address will be written instead. This situation is
+/// still considered an success.
 /// @param address The memory address got from backtrace().
 /// @param buffer The output buffer.
 /// @param buffer_size Buffer size, including the space for '\0'.
