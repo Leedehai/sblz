@@ -37,18 +37,13 @@ SOLIB_HIDE_SYMBOLS=-fvisibility=hidden -fvisibility-inlines-hidden
 # Now I don't feel like sinking time into making the header dependency work.
 # Maybe I'll do it later in another commit.
 
-# phony rule
 all: out/example_symbolize out/example_symbolize_with_so
 
-# phony rule
 clean:
 	rm -rf out
 
-# the build directory
 out_dir:
 	@if [ ! -d out ]; then mkdir out; fi
-
-# targets
 
 out/symbolizer.o : src/symbolizer.cc | out_dir
 	$(CXX) $(CXXFLAGS) $(CXX_OPTIMIZE) -c $^ -o $@
@@ -57,7 +52,7 @@ out/symbolizer.pic.o : src/symbolizer.cc | out_dir
 	$(CXX) $(CXXFLAGS) $(CXX_OPTIMIZE) $(SOLIB_HIDE_SYMBOLS) -fPIC -c $^ -o $@
 
 out/symbolizer.so : out/symbolizer.pic.o | out_dir
-	$(CXX) $(SOLIB_HIDE_SYMBOLS) -shared $^ -o $@
+	$(CXX) -shared $^ -o $@
 
 out/example_symbolize.o : example/symbolize.cc | out_dir
 	$(CXX) $(CXXFLAGS) $(CXX_NO_OPTIMIZE) -c $^ -o $@
