@@ -1,6 +1,8 @@
 # SBLZ
 > Async-Signal Safe Symbolizer and Demangler for Itanium C++ ABI.
 
+[![Build Status](https://travis-ci.com/Leedehai/sblz.svg?branch=master)](https://travis-ci.com/Leedehai/sblz)
+
 The symbolizer and demangler are used to interpret stack traces produced by
 POSIX system call `backtrace()` so as to make them human-readable.
 

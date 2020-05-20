@@ -1,0 +1,16 @@
+# for Travis CI
+language: cpp
+
+compiler:
+  - gcc # on macOS it's actually clang
+os:
+  - osx # the old name for macOS
+  - linux
+
+script:
+  - make clean && make
+  - tests/check_symbolizer.py
+  - tests/check_demangler.py
+branches:
+  only:
+    - master
