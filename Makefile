@@ -37,13 +37,23 @@ SOLIB_HIDE_SYMBOLS=-fvisibility=hidden -fvisibility-inlines-hidden
 # Now I don't feel like sinking time into making the header dependency work.
 # Maybe I'll do it later in another commit.
 
-all: out/example_symbolize out/example_symbolize_with_so
+all: out/example_demangle out/example_symbolize out/example_symbolize_with_so
 
 clean:
 	rm -rf out
 
 out_dir:
 	@if [ ! -d out ]; then mkdir out; fi
+
+out/demangler.o : src/demangler.cc | out_dir
+	$(CXX) $(CXXFLAGS) $(CXX_OPTIMIZE) -c $^ -o $@
+
+out/example_demangle.o : example/demangle.cc | out_dir
+	$(CXX) $(CXXFLAGS) $(CXX_OPTIMIZE) -c $^ -o $@
+
+out/example_demangle : out/example_demangle.o out/demangler.o | out_dir
+	$(CXX) $(LDFLAGS) $^ -o $@
+	@printf "\033[36mDone: $@\033[0m\n"
 
 out/symbolizer.o : src/symbolizer.cc | out_dir
 	$(CXX) $(CXXFLAGS) $(CXX_OPTIMIZE) -c $^ -o $@

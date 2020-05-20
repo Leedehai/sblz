@@ -2,12 +2,13 @@
 # Copyright (c) 2020 Leedehai. All rights reserved.
 # Use of this source code is governed under the LICENSE.txt file.
 # -----
-# Test symbolize.cc.
+# Test symbolizer.cc.
 # How to test: see README.md.
 
 import os, sys
 import subprocess
 import re
+from typing import List, Optional
 # My own package
 import testing_utils
 
@@ -20,14 +21,15 @@ PROGRAMS_UNDER_TEST = [
 ]
 
 
-def find_overlapped_symbol(mangled_symbol, function_names):
+def find_overlapped_symbol(mangled_symbol: str,
+                           function_names: List[str]) -> Optional[str]:
     for name in function_names:
         if name in mangled_symbol:
             return name
     return None
 
 
-def validate_output(output):
+def validate_output(output: str) -> bool:
     """
     Params:
     output: str
@@ -84,7 +86,7 @@ def validate_output(output):
     return True
 
 
-def run_one(program):
+def run_one(program: str) -> bool:
     """
     Returns:
     bool: True on success
@@ -105,7 +107,7 @@ def run_one(program):
     return validate_output(testing_utils.ensure_str(output))
 
 
-def run():
+def run() -> bool:
     """
     Returns:
     bool: True on success

@@ -28,16 +28,22 @@ with best efforts) supporting C++17.
 
 ## How to use
 
-APIs: see [include/sblz/sblz.h](include/sblz/sblz.h).
+APIs: see [sblz.h](include/sblz/sblz.h).
 
 **Symbolizer**
 
 The symbolizer walks the call stack of the program under inspection, so you need
 to link the symbolizer into that program binary<sup>[1]</sup>. See [Makefile](Makefile)
-for how to build and [this example](example/symbolize.cc) for how to use it in a
-client program.
+for how to build and [example/symbolize.cc](example/symbolize.cc) for how to use
+it in a client program.
 
 > <sup>[1]</sup> Link as an object, a static library, or a shared library.
+
+**Demangler**
+
+The demangler takes a pointer to the symbol string and populates the output
+buffer. See [Makefile](Makefile) for how to build and
+[example/demangle.cc](example/demangle.cc) for how to use it in a client program.
 
 ## How to test
 
@@ -49,22 +55,7 @@ make clean && make
 tests/check_symbolizer.py
 
 # Demangler
-TODO
-```
-
-## How to use
-
-This project must be compiled as an object, because it must be running in the
-client program's process in order to read its symbols.
-
-APIs:
-```c++
-// Get symbols from function return addresses
-TODO
-
-// Demangle a symbol
-char buffer[64] = {0}; // Don't use dynamic memory allocation, as it is async-signal unsafe
-TODO
+tests/check_demangler.py
 ```
 
 ## Concepts
