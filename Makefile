@@ -17,7 +17,6 @@ USE_LIB_CXX = #-stdlib=libc++
 CXXFLAGS = -std=c++17 -Wall -pedantic -Iinclude -Isrc -MMD $(USE_LIB_CXX)
 LDFLAGS = $(USE_LIB_CXX)
 
-# -fvisibility-inlines-hidden is for C++ only
 SOLIB_HIDE_SYMBOLS=-fvisibility=hidden -fvisibility-inlines-hidden
 
 # Headers:
@@ -26,18 +25,16 @@ SOLIB_HIDE_SYMBOLS=-fvisibility=hidden -fvisibility-inlines-hidden
 # and somehow include the deps into the compile rules. However, the usual trick
 # to do it gets entangled with my requirement that all build artifacts should
 # go to a subdirectory "out" instead of being mixed with the source files.
-#
 # When I was in high school I was very good at Make until I discovered CMake
 # and Chromium's GN and TensorFlow's Bazel.
 #
 # This is one point I don't like Make. So I switched to GN + Ninja for
 # larger endeavors: https://gist.github.com/Leedehai/5a0fba275543891f192b92868ee603c0
-# I kept Make for this project just to make it handy.
-#
-# Now I don't feel like sinking time into making the header dependency work.
-# Maybe I'll do it later in another commit.
+# I kept Make for this project just to make it handy. Now I don't feel
+# like sinking time into making the header dependency work.
 
 all: out/example_demangle out/example_symbolize out/example_symbolize_with_so
+	@printf "\033[36mDone: $@\033[0m\n"
 
 clean:
 	rm -rf out
@@ -53,7 +50,6 @@ out/example_demangle.o : example/demangle.cc | out_dir
 
 out/example_demangle : out/example_demangle.o out/demangler.o | out_dir
 	$(CXX) $(LDFLAGS) $^ -o $@
-	@printf "\033[36mDone: $@\033[0m\n"
 
 out/symbolizer.o : src/symbolizer.cc | out_dir
 	$(CXX) $(CXXFLAGS) $(CXX_OPTIMIZE) -c $^ -o $@
@@ -69,19 +65,13 @@ out/example_symbolize.o : example/symbolize.cc | out_dir
 
 out/example_symbolize : out/example_symbolize.o out/symbolizer.o | out_dir
 	$(CXX) $(LDFLAGS) $^ -o $@
-	@printf "\033[36mDone: $@\033[0m\n"
 
 # This links with the dynamic library. At the current configuration this
-# executable must be invoked from the project root, not under the "out"
-# directory or any other directories, because I did not tell the runtime
-# loader how to find the dynamic library in a working-directory-agnostic
-# way.
-# To tell the runtime loader how to do so regardless of the working
-# directory, I need to tweak the compiler/linker command flags, and it's
-# different on Linux and macOS. To see how to do it, see my another repo
-# https://github.com/leedehai/buildconfig file toolchain/BUILD.gn.
+# executable must be invoked from the project root, since I did not tell
+# the runtime loader how to locate the dynamic libs by tweaking compiler
+# and linker flags. To see how to do so, see toolchain/BUILD.gn in my
+# another repo https://github.com/leedehai/buildconfig
 out/example_symbolize_with_so : out/example_symbolize.o out/symbolizer.so | out_dir
 	$(CXX) $(LDFLAGS) -o $@ $^
-	@printf "\033[36mDone: $@\033[0m\n"
 
 .PHONY: all clean

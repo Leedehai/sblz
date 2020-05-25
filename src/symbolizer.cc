@@ -10,7 +10,7 @@
 #include <algorithm>  // std::min()
 #include <limits>  // std::numeric_limits<>
 
-#include "macro.h"
+#include "common.h"
 #include "sblz/sblz.h"
 
 #if defined(OS_LINUX)

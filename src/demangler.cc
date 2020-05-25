@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common.h"
 #include "sblz/sblz.h"
 
 namespace sblz {
@@ -1212,7 +1213,7 @@ static bool ParseTopLevelMangledName(State* state) {
 }
 
 // The demangler entry point.
-bool Demangle(const char* symbol, char* buffer, size_t buffer_size) {
+EXPORT bool Demangle(const char* symbol, char* buffer, size_t buffer_size) {
   State state;
   InitState(&state, /*mangled=*/symbol, /*out=*/buffer,
             /*out_size=*/buffer_size);
