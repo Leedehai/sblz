@@ -691,9 +691,11 @@ EXPORT bool Symbolize(void* address, char* buffer, size_t buffer_size) {
   // If an image containing addr cannot be found, dladdr() returns 0. On success
   // it returns a non-zero value.
   // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dladdr.3.html
-  if (dladdr(address, &info)) {
+  if (dladdr(address, &info) && info.dli_sname) {
+    // If the buffer is not large enough, we still copy the symbol to it, though
+    // the copied content would be incomplete and would be not demangle-able.
     memcpy(buffer, info.dli_sname, buffer_size);
-    buffer[buffer_size - 1] = '\0';  // Make sure it is always '\0'-terminated.
+    buffer[buffer_size - 1] = '\0';
     return true;
   }
   return false;
